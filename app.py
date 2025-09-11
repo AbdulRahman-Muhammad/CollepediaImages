@@ -1,13 +1,13 @@
 from flask import Flask, render_template, request
-from github import Github
+from github import Github, Auth
 import uuid
 
 app = Flask(__name__)
 
 # Load configuration from environment variables
-GITHUB_TOKEN = "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"
+GITHUB_TOKEN = Auth.Token("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")
 REPO_NAME = "AbdulRahman-Muhammad/CollepediaImages"
-g = Github(GITHUB_TOKEN)
+g = Github(auth=GITHUB_TOKEN)
 repo = g.get_repo(REPO_NAME)
 
 @app.route('/')

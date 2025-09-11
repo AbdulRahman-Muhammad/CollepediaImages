@@ -5,10 +5,11 @@ import uuid
 app = Flask(__name__)
 
 # Load configuration from environment variables
-GITHUB_TOKEN = Auth.Login("bedob3401@gmail.com", "github*12")
+GITHUB_TOKEN = Auth.Login("AbdulRahman-Muhammad", "github*12")
 REPO_NAME = "AbdulRahman-Muhammad/CollepediaImages"
 g = Github(auth=GITHUB_TOKEN)
-g.get_user().login
+if g.get_user().login != "AbdulRahman-Muhammad":
+    exit()
 repo = g.get_repo(REPO_NAME)
 
 @app.route('/')

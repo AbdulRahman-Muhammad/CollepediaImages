@@ -8,6 +8,7 @@ app = Flask(__name__)
 GITHUB_TOKEN = Auth.Login("bedob3401@gmail.com", "github*12")
 REPO_NAME = "AbdulRahman-Muhammad/CollepediaImages"
 g = Github(auth=GITHUB_TOKEN)
+g.get_user().login
 repo = g.get_repo(REPO_NAME)
 
 @app.route('/')

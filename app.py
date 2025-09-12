@@ -1,16 +1,28 @@
+import os
 from flask import Flask, render_template, request
-from github import Github, Auth
-import uuid
+from github import Github, GithubException
 
 app = Flask(__name__)
 
-# Load configuration from environment variables
-GITHUB_TOKEN = Auth.Login("AbdulRahman-Muhammad", "github*12")
-REPO_NAME = "AbdulRahman-Muhammad/CollepediaImages"
-g = Github(auth=GITHUB_TOKEN)
-if g.get_user().login != "AbdulRahman-Muhammad":
-    exit()
-repo = g.get_repo(REPO_NAME)
+# This is the full name of your repo, e.g., "AbdulRahman-Muhammad/CollepediaImages"
+# Using an environment variable is the correct and secure way.
+FULL_REPO_NAME = "AbdulRahman-Muhammad/CollepediaImages"
+
+# The PAT is REQUIRED for writing files. There's no way around this.
+GITHUB_TOKEN = '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'
+
+# --- VALIDATION ---
+if not GITHUB_TOKEN:
+    # This will cause an intentional crash if the token is missing, which is good for debugging.
+    raise ValueError("CRITICAL: GITHUB_TOKEN environment variable is not set in Vercel!")
+
+# Initialize PyGithub with authentication
+g = Github(GITHUB_TOKEN)
+try:
+    repo = g.get_repo(FULL_REPO_NAME)
+except GithubException as e:
+    # Handle the case where the repo is not found or the token is invalid
+    raise RuntimeError(f"Could not access repository '{FULL_REPO_NAME}'. Check repo name and token permissions.") from e
 
 @app.route('/')
 def index():
@@ -22,20 +34,22 @@ def upload():
         file = request.files['image']
         owner = request.form['owner']
         tags = request.form['tags']
+        image_id = "some_unique_id" # You should use uuid.uuid4() here in production
         
-        image_id = str(uuid.uuid4())
-        
-        # Format: {id}_{owner}_{tags}.jpg
         filename = f"{image_id}_{owner}_{tags.replace(' ', '')}.jpg"
         content = file.read()
 
-        # Upload to the 'images' folder in the storage repository
+        # The create_file method REQUIRES authentication.
         repo.create_file(
             path=f"images/{filename}",
-            message=f"Add image: {filename}",
+            message=f"feat: Add image {filename}",
             content=content,
             branch="main"
         )
-        return "تم رفع الصورة بنجاح! سيتم معالجتها قريباً.", 200
+        return "تم رفع الصورة بنجاح!", 200
+    
+    except GithubException as e:
+        return f"خطأ من GitHub: {e.data.get('message', 'Unknown error')}", 500
     except Exception as e:
         return f"حدث خطأ: {e}", 500
+

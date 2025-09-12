@@ -1,50 +1,123 @@
 import os
 import uuid
 import json
-from flask import Flask, render_template, request
+import re
+import time
+from datetime import datetime, timezone
+from flask import Flask, render_template, request, jsonify
 from github import Github, GithubException
+import requests
 
 app = Flask(__name__)
 
-# --- DEBUGGING SECTION ---
-# This part will help us see what Vercel is actually providing to our app.
-print("--- Starting Application ---")
-github_token_from_env = os.environ.get('GITHUB_TOKEN')
+# --- CONFIGURATION ---
+FULL_REPO_NAME = os.environ.get("GITHUB_REPO", "AbdulRahman-Muhammad/CollepediaImages")
+DATA_JSON_URL = f"https://raw.githubusercontent.com/{FULL_REPO_NAME}/main/data.json"
+GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN')
+CACHE_MAX_AGE_SECONDS = 300  # Cache data for 5 minutes
 
-if github_token_from_env:
-    # Print only the first 4 and last 4 characters for security.
-    # This confirms the token exists without exposing it.
-    print(f"✅ GITHUB_TOKEN environment variable found.")
-    print(f"   Token preview: {github_token_from_env[:4]}...{github_token_from_env[-4:]}")
-else:
-    # This message is a clear indicator of the problem.
-    print("❌ CRITICAL: GITHUB_TOKEN environment variable was NOT FOUND or is EMPTY.")
-# --- END DEBUGGING SECTION ---
-
-
-FULL_REPO_NAME = "AbdulRahman-Muhammad/CollepediaImages"
-GITHUB_TOKEN = github_token_from_env # Use the variable we just checked
-
+# --- GITHUB CLIENT (FOR UPLOADS ONLY) ---
 if not GITHUB_TOKEN:
     raise ValueError("CRITICAL: GITHUB_TOKEN environment variable is not set!")
-
 g = Github(GITHUB_TOKEN)
 try:
     repo = g.get_repo(FULL_REPO_NAME)
-except GithubException as e:
-    raise RuntimeError(f"Could not access repo '{FULL_REPO_NAME}'. Check name and token permissions.")
+except GithubException:
+    raise RuntimeError(f"Could not access repo '{FULL_REPO_NAME}'. Check name and token.")
+
+# --- IN-MEMORY CACHE ---
+cache = {"data": None, "timestamp": 0}
+
+def get_cached_data():
+    global cache
+    now = time.time()
+    if not cache["data"] or (now - cache["timestamp"] > CACHE_MAX_AGE_SECONDS):
+        response = requests.get(DATA_JSON_URL)
+        response.raise_for_status()
+        cache["data"] = response.json()
+        cache["timestamp"] = now
+    return cache["data"]
+
+# --- ROUTES ---
 
 @app.route('/')
-def index():
+def homepage():
     return render_template('index.html')
 
+@app.route('/upload-page')
+def upload_page():
+    return render_template('upload.html')
+
+@app.route('/documentation')
+def documentation():
+    return render_template('documentation.html')
+    
+@app.route('/search')
+def search_api():
+    try:
+        all_images = get_cached_data()
+        query = request.args.get('q', '').strip()
+        
+        # Advanced Search Logic
+        # (This is a simplified parser for demonstration; a real-world version would be more complex)
+        
+        results = all_images
+
+        # Handle sorting
+        sort_match = re.search(r'sort:(\w+)-(asc|desc)', query)
+        if sort_match:
+            sort_by, direction = sort_match.groups()
+            query = re.sub(r'sort:\w+-(asc|desc)', '', query).strip()
+            if sort_by == 'date':
+                results.sort(key=lambda x: x.get('timestamp', ''), reverse=(direction == 'desc'))
+
+        # Simple keyword/tag filtering (with OR logic)
+        or_groups = [part.strip() for part in query.split(' OR ')]
+        
+        final_results = []
+        for image in results:
+            image_tags_lower = {tag.lower() for tag in image.get('Tags', [])}
+            image_owner_lower = image.get('owner', '').lower()
+
+            for group in or_groups:
+                must_match_all = True
+                
+                # Split by space for AND conditions within the group
+                and_parts = group.split()
+                for part in and_parts:
+                    part_lower = part.lower()
+                    
+                    if part_lower.startswith('owner:'):
+                        if not part_lower[6:] == image_owner_lower:
+                            must_match_all = False; break
+                    elif part_lower.startswith('-'):
+                        if part_lower[1:] in image_tags_lower:
+                            must_match_all = False; break
+                    elif '*' in part_lower: # Wildcard
+                        regex = re.compile(part_lower.replace('*', '.*'))
+                        if not any(regex.match(tag) for tag in image_tags_lower):
+                           must_match_all = False; break
+                    else: # Simple tag
+                        if not part_lower in image_tags_lower:
+                            must_match_all = False; break
+                
+                if must_match_all:
+                    final_results.append(image)
+                    break 
+
+        return jsonify(list({v['id']:v for v in final_results}.values())) # Return unique results
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route('/upload', methods=['POST'])
-def upload():
+def upload_handler():
+    # This logic remains largely the same but is now only for writing data.
     try:
         file = request.files['image']
         owner = request.form['owner']
         tags_str = request.form['tags']
-        tags_list = [tag.strip() for tag in tags_str.split(',')]
+        tags_list = [tag.strip() for tag in tags_str.split(',') if tag.strip()]
         
         image_id = str(uuid.uuid4())
         image_filename = f"{image_id}.jpg"
@@ -62,20 +135,17 @@ def upload():
             json_file = repo.get_contents(json_path, ref="main")
             data = json.loads(json_file.decoded_content.decode('utf-8'))
             json_sha = json_file.sha
-        except GithubException as e:
-            if e.status == 404:
-                data = []
-                json_sha = None
-            else:
-                raise e
+        except GithubException:
+            data = []
+            json_sha = None
 
-        # --- IMPORTANT CHANGE: Reverted to the direct raw link ---
         new_entry = {
             "index": len(data),
             "owner": owner,
             "Tags": tags_list,
             "id": image_id,
-            "Url": f"https://raw.githubusercontent.com/{FULL_REPO_NAME}/main/{image_path}"
+            "Url": f"https://raw.githubusercontent.com/{FULL_REPO_NAME}/main/{image_path}",
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }
         data.append(new_entry)
         
@@ -86,8 +156,8 @@ def upload():
         else:
             repo.create_file(json_path, "docs: Create initial data.json", new_content, branch="main")
 
-        return "تم رفع الصورة وتحديث البيانات بنجاح!", 200
+        return "Image uploaded and data updated successfully!", 200
 
     except Exception as e:
-        return f"حدث خطأ: {e}", 500
+        return f"An error occurred: {e}", 500
 

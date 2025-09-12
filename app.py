@@ -6,9 +6,24 @@ from github import Github, GithubException
 
 app = Flask(__name__)
 
-# The full name of your PUBLIC repo
+# --- DEBUGGING SECTION ---
+# This part will help us see what Vercel is actually providing to our app.
+print("--- Starting Application ---")
+github_token_from_env = os.environ.get('GITHUB_TOKEN')
+
+if github_token_from_env:
+    # Print only the first 4 and last 4 characters for security.
+    # This confirms the token exists without exposing it.
+    print(f"✅ GITHUB_TOKEN environment variable found.")
+    print(f"   Token preview: {github_token_from_env[:4]}...{github_token_from_env[-4:]}")
+else:
+    # This message is a clear indicator of the problem.
+    print("❌ CRITICAL: GITHUB_TOKEN environment variable was NOT FOUND or is EMPTY.")
+# --- END DEBUGGING SECTION ---
+
+
 FULL_REPO_NAME = "AbdulRahman-Muhammad/CollepediaImages"
-GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN') # Still needed for UPLOADING
+GITHUB_TOKEN = github_token_from_env # Use the variable we just checked
 
 if not GITHUB_TOKEN:
     raise ValueError("CRITICAL: GITHUB_TOKEN environment variable is not set!")

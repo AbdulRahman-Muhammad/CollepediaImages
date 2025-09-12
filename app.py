@@ -9,7 +9,7 @@ app = Flask(__name__)
 FULL_REPO_NAME = "AbdulRahman-Muhammad/CollepediaImages"
 
 # The PAT is REQUIRED for writing files. There's no way around this.
-GITHUB_TOKEN = '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'
+GITHUB_TOKEN = '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'
 
 # --- VALIDATION ---
 if not GITHUB_TOKEN:

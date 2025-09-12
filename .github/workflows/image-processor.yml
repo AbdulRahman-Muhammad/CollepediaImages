@@ -13,7 +13,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          token: "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"
+          token: "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"
 
       - name: Get new image file path
         id: get_file

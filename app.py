@@ -14,7 +14,7 @@ app = Flask(__name__)
 FULL_REPO_NAME = os.environ.get("GITHUB_REPO", "AbdulRahman-Muhammad/CollepediaImages")
 DATA_JSON_URL = f"https://raw.githubusercontent.com/{FULL_REPO_NAME}/main/data.json"
 GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN')
-CACHE_MAX_AGE_SECONDS = 300  # Cache data for 5 minutes
+CACHE_MAX_AGE_SECONDS = 60  # Cache data for 5 minutes
 
 # --- GITHUB CLIENT (FOR UPLOADS ONLY) ---
 if not GITHUB_TOKEN:

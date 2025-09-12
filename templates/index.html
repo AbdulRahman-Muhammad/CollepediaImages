@@ -1,26 +1,51 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>معرض الصور</title>
+    <title>Collepedia Images</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <div class="container">
-        <h1>رفع صورة جديدة</h1>
-        <form action="/upload" method="post" enctype="multipart/form-data">
-            <label for="owner">اسمك:</label>
-            <input type="text" id="owner" name="owner" required>
-
-            <label for="tags">علامات (مفصولة بفاصلة):</label>
-            <input type="text" id="tags" name="tags" placeholder="مثال: طبيعة, سماء, أزرق" required>
-
-            <label for="image">اختر صورة:</label>
-            <input type="file" id="image" name="image" accept="image/jpeg" required>
-
-            <button type="submit">رفع الصورة</button>
+    <header class="search-header">
+        <h1>Collepedia <span class="logo-alt">Images</span></h1>
+        <form id="search-form" class="search-bar">
+            <input type="text" id="search-input" placeholder="Search images... Try 'car OR boat' or 'owner:name -dog'">
+            <button type="submit" aria-label="Search">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10 18a7.952 7.952 0 0 0 4.897-1.688l4.396 4.396 1.414-1.414-4.396-4.396A7.952 7.952 0 0 0 18 10c0-4.411-3.589-8-8-8s-8 3.589-8 8 3.589 8 8 8zm0-14c3.309 0 6 2.691 6 6s-2.691 6-6 6-6-2.691-6-6 2.691-6 6-6z"/></svg>
+            </button>
         </form>
+        <nav class="header-nav">
+            <a href="/upload-page">Upload Image</a>
+            <a href="/documentation">Search Documentation</a>
+        </nav>
+    </header>
+
+    <main id="gallery-grid" class="gallery-grid"></main>
+    <div id="loader" class="loader-hidden"><div></div></div>
+
+    <div id="modal-overlay" class="modal-overlay modal-hidden">
+        <div class="modal-content">
+            <button id="modal-close" class="modal-close-btn" aria-label="Close image details">&times;</button>
+            <div class="modal-body">
+                <div class="modal-image-container">
+                    <img id="modal-img" src="" alt="Image details">
+                </div>
+                <div class="modal-info">
+                    <h2>Details</h2>
+                    <p><strong>Owner:</strong> <span id="modal-owner"></span></p>
+                    <p><strong>Uploaded:</strong> <span id="modal-date"></span></p>
+                    <div class="tags" id="modal-tags"></div>
+                    <div class="modal-actions">
+                        <button id="modal-download">Download</button>
+                        <button id="modal-copy-link">Copy Link</button>
+                        <button id="modal-find-similar">Find Similar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+    
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

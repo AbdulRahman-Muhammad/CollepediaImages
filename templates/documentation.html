@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Documentation - Collepedia Images</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="doc-page">
+    <header class="search-header">
+        <h1>Collepedia <span class="logo-alt">Images</span></h1>
+        <nav class="header-nav">
+            <a href="/">Back to Search</a>
+            <a href="/upload-page">Upload Image</a>
+        </nav>
+    </header>
+    <main class="doc-content">
+        <h2>Search Tips & Tricks</h2>
+        <p>Our search engine supports a powerful query syntax. Here are some examples to get you started.</p>
+
+        <h3>Basic Search (AND logic)</h3>
+        <p>Simply type words separated by spaces. This will find images that contain ALL of the specified tags.</p>
+        <code>blue car night</code>
+
+        <h3>OR Logic</h3>
+        <p>Use the `OR` operator (must be uppercase) to find images that match any of the terms.</p>
+        <code>cat OR dog</code>
+        <code>sky (blue OR grey)</code>
+
+        <h3>Excluding Tags</h3>
+        <p>Use a hyphen (`-`) before a tag to exclude any images containing that tag.</p>
+        <code>animal -dog</code>
+        
+        <h3>Filtering by Owner</h3>
+        <p>Use the `owner:` prefix to find images from a specific user.</p>
+        <code>owner:john car</code>
+        
+        <h3>Wildcard Search</h3>
+        <p>Use an asterisk (`*`) as a wildcard to match parts of tags.</p>
+        <code>land*</code>
+        
+        <h3>Sorting Results</h3>
+        <p>You can sort results by date using the `sort:` operator.</p>
+        <code>sort:date-desc</code>
+        <code>cat sort:date-asc</code>
+        
+        <h3>Combining Operators</h3>
+        <p>You can combine all operators to create highly specific queries.</p>
+        <code>owner:jane (cat OR dog) -black sort:date-desc</code>
+    </main>
+</body>
+</html>

@@ -88,7 +88,7 @@ def search_api():
                     part_lower = part.lower()
                     
                     if part_lower.startswith('owner:'):
-                        if not part_lower[6:] == image_owner_lower:
+                        if not part_lower[6:] in image_owner_lower:
                             must_match_all = False; break
                     elif part_lower.startswith('-'):
                         if part_lower[1:] in image_tags_lower:

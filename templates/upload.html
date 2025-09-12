@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Image - Collepedia Images</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="doc-page">
+    <header class="search-header">
+        <h1>Collepedia <span class="logo-alt">Images</span></h1>
+        <nav class="header-nav">
+            <a href="/">Back to Search</a>
+            <a href="/documentation">Search Documentation</a>
+        </nav>
+    </header>
+
+    <main class="upload-container">
+        <div class="upload-form-wrapper">
+            <h2>Upload a New Image</h2>
+            <p>Select an image, add your name, and provide comma-separated tags to help others find it.</p>
+            
+            <form action="/upload" method="post" enctype="multipart/form-data" id="upload-form">
+                <div class="form-group">
+                    <label for="owner">Your Name</label>
+                    <input type="text" id="owner" name="owner" required placeholder="e.g., John Doe">
+                </div>
+
+                <div class="form-group">
+                    <label for="tags">Tags (comma-separated)</label>
+                    <input type="text" id="tags" name="tags" required placeholder="e.g., nature, car, night, blue">
+                </div>
+                
+                <div class="form-group">
+                    <label for="image">Image File</label>
+                    <input type="file" id="image" name="image" accept="image/jpeg, image/png" required>
+                </div>
+                
+                <div id="form-feedback" class="form-feedback"></div>
+
+                <button type="submit" class="submit-btn">
+                    <span class="btn-text">Upload Image</span>
+                    <span class="btn-loader loader-hidden"></span>
+                </button>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        document.getElementById('upload-form').addEventListener('submit', function(e) {
+            const btn = this.querySelector('.submit-btn');
+            const btnText = btn.querySelector('.btn-text');
+            const btnLoader = btn.querySelector('.btn-loader');
+            const feedback = document.getElementById('form-feedback');
+
+            feedback.textContent = '';
+            feedback.className = 'form-feedback';
+            
+            btn.disabled = true;
+            btnText.style.display = 'none';
+            btnLoader.classList.remove('loader-hidden');
+
+            e.preventDefault(); 
+            const formData = new FormData(this);
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Server responded with ${response.status}`);
+                }
+                return response.text();
+            })
+            .then(data => {
+                feedback.textContent = data;
+                feedback.classList.add('success');
+                document.getElementById('upload-form').reset();
+            })
+            .catch(error => {
+                feedback.textContent = `Upload failed: ${error.message}. Please try again.`;
+                feedback.classList.add('error');
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btnText.style.display = 'inline';
+                btnLoader.classList.add('loader-hidden');
+            });
+        });
+    </script>
+</body>
+</html>

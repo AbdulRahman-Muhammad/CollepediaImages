@@ -30,10 +30,10 @@ body {
     background-color: var(--bg-color);
     color: var(--text-color);
     margin: 0;
-    padding-top: 120px;
     transition: background-color 0.3s, color 0.3s;
 }
 
+/* --- Header --- */
 .search-header {
     position: fixed; top: 0; width: 100%; padding: 1rem; text-align: center; z-index: 1000;
     background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
@@ -57,25 +57,28 @@ body {
 .header-nav a { color: var(--text-color-secondary); text-decoration: none; font-size: 0.9rem; }
 .header-nav a:hover { color: var(--primary-color); }
 
+/* --- Masonry Gallery --- */
 .gallery-grid {
-    padding: 1rem; column-gap: 1rem;
-    column-count: 5;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+    padding: 1rem;
+    margin-top: 120px; /* يبدأ بعد الهيدر */
 }
+
 .gallery-card {
-    display: inline-block; width: 100%; margin-bottom: 1rem;
-    border-radius: var(--border-radius); overflow: hidden;
-    cursor: pointer; position: relative;
+    break-inside: avoid;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
     box-shadow: 0 4px 12px var(--shadow-color);
     transition: transform 0.2s ease-out;
 }
 .gallery-card:hover { transform: scale(1.03); }
-.gallery-card img { display: block; width: 100%; height: auto; }
+.gallery-card img { width: 100%; display: block; height: auto; }
 
-@media (max-width: 1400px) { .gallery-grid { column-count: 4; } }
-@media (max-width: 1100px) { .gallery-grid { column-count: 3; } }
-@media (max-width: 800px) { .gallery-grid { column-count: 2; } }
-@media (max-width: 500px) { .gallery-grid { column-count: 1; } }
-
+/* --- Modal --- */
 .modal-overlay {
     position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); display: flex;
     justify-content: center; align-items: center; z-index: 2000;
@@ -112,18 +115,18 @@ body {
 }
 .modal-actions button:hover { background: var(--bg-color); }
 
-.loader-hidden { display: none !important; }
-
-.doc-page { padding-top: 80px; }
+/* --- Docs & Upload Pages --- */
+.doc-page { margin-top: 120px; }
 .doc-content { max-width: 800px; margin: 2rem auto; padding: 2rem; background: var(--surface-color); border-radius: var(--border-radius); }
 .doc-content h3 { border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-top: 2rem; }
 .doc-content code { background: var(--bg-color); padding: 0.2rem 0.5rem; border-radius: 4px; font-family: monospace; }
-/* --- Upload Page Specific Styles --- */
+
 .upload-container {
     display: flex;
     justify-content: center;
     align-items: center;
     padding: 2rem;
+    margin-top: 120px; /* يبدأ بعد الهيدر */
 }
 
 .upload-form-wrapper {
@@ -134,107 +137,3 @@ body {
     border-radius: var(--border-radius);
     box-shadow: 0 4px 12px var(--shadow-color);
 }
-
-.upload-form-wrapper h2 {
-    margin-top: 0;
-    text-align: center;
-}
-
-.upload-form-wrapper p {
-    text-align: center;
-    color: var(--text-color-secondary);
-    margin-bottom: 2rem;
-}
-
-.form-group {
-    margin-bottom: 1.5rem;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 600;
-}
-
-.form-group input[type="text"],
-.form-group input[type="file"] {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    font-size: 1rem;
-}
-
-.form-group input[type="file"] {
-    padding: 0.5rem;
-}
-
-.form-group input:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 20%, transparent);
-}
-
-.submit-btn {
-    width: 100%;
-    padding: 0.8rem 1rem;
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 1.1rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.submit-btn:hover:not(:disabled) {
-    background-color: color-mix(in srgb, var(--primary-color) 90%, black);
-}
-
-.submit-btn:disabled {
-    background-color: var(--text-color-secondary);
-    cursor: not-allowed;
-}
-
-.form-feedback {
-    text-align: center;
-    margin-top: 1rem;
-    padding: 0.75rem;
-    border-radius: 8px;
-    display: none; /* Hidden by default */
-}
-
-.form-feedback:not(:empty) {
-    display: block;
-}
-
-.form-feedback.success {
-    background-color: color-mix(in srgb, #4caf50 20%, transparent);
-    color: #4caf50;
-}
-
-.form-feedback.error {
-    background-color: color-mix(in srgb, #f44336 20%, transparent);
-    color: #f44336;
-}
-
-/* Loader animation for the button */
-.btn-loader {
-    width: 20px;
-    height: 20px;
-    border: 3px solid rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    border-top-color: #fff;
-    animation: spin 1s ease-in-out infinite;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
